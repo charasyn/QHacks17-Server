@@ -273,7 +273,8 @@ function adminRoomelementsFunc(req,res){
 		for(var i=0;i<results.length;i++){
 			var r=results[i];
 			if(out[r.UserId]!=null){
-				out2[j++]=out[r.UserId];
+				if(out[r.UserId].message!=='')
+					out2[j++]=out[r.UserId];
 				out[r.UserId]=null;
 			}
 		}
