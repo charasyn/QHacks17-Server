@@ -64,7 +64,7 @@ function myroomsFunc(req,res){
 			console.log(error);
 			return;
 		}
-		var processed=results.map((x)=>{return {roomId:x.RoomId,name:x.Name,description:x.Description}});
+		var processed=results.map(function (x){return {roomId:x.RoomId,name:x.Name,description:x.Description}});
 		
 		res.statusCode=200;
 		res.end(JSON.stringify({rooms:processed}));
@@ -85,7 +85,7 @@ function joinroombyidFunc(req,res){
 			console.log(error);
 			return;
 		}
-		var processed=results.map((x)=>{return {roomId:x.RoomId,name:x.Name,description:x.Description}});
+		var processed=results.map(function (x){return {roomId:x.RoomId,name:x.Name,description:x.Description}});
 		
 		res.statusCode=200;
 		res.end(JSON.stringify({rooms:processed}));
@@ -107,7 +107,7 @@ function roomelementsFunc(req,res){
 			console.log(error);
 			return;
 		}
-		var processed=results.map((x)=>{return {roomId:x.RoomId,name:x.Name,description:x.Description}});
+		var processed=results.map(function (x){return {roomId:x.RoomId,name:x.Name,description:x.Description}});
 		
 		res.statusCode=200;
 		res.end(JSON.stringify({rooms:processed}));
@@ -133,7 +133,7 @@ var fLUT = [
 
 function handle(req,res){
 	var search = url.parse(req.url).pathname;
-	var matches = fLUT.filter((x)=>(x.url===search));
+	var matches = fLUT.filter(function (x){return x.url===search;});
 	if(matches.length!=1){
 		res.statusCode=400;
 		res.end("Invalid verb.");
