@@ -328,7 +328,7 @@ var fLUT = [
 	{'url':'/joinroombyid','func':joinroombyidFunc},
 	{'url':'/roomelements','func':roomelementsFunc},
 	{'url':'/updateelementstate','func':updateelementstateFunc},
-	{'url':'/updateelementstatebyroom','func':updateelementstateFunc},
+	{'url':'/updateelementstatebyroom','func':updateelementstatebyroomFunc},
 	//{'url':'/nearbyrooms','func':nearbyroomsFunc},
 	{'url':'/admin/myrooms','func':adminMyroomsFunc},
 	{'url':'/admin/roomelements','func':adminRoomelementsFunc},
