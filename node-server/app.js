@@ -328,6 +328,50 @@ function adminUpdateelementstateFunc(req,res){
 	});
 };
 
+function adminUpdateelementstatebyroomFunc(req,res){
+	var urlp = url.parse(req.url,true);
+	var userId=urlp.query.userId;
+	var token=urlp.query.token;
+	var roomId=urlp.query.roomId;
+	var value=urlp.query.value;
+	var type=urlp.query.type;
+	var targetUserId=urlp.query.targetUserId;
+	connection.query('select Elements.ElementId from Elements where Elements.RoomId = ? and Elements.Type = ?;',[roomId,type],function (error,results,fields){
+		console.log(results);
+		if(error){
+			res.statusCode=500;
+			res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
+			console.log(error);
+			return;
+		}
+		if(results.length>1){
+			res.statusCode=500;
+			res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
+			return;
+		}
+		if(results.length<1){
+			res.statusCode=404;
+			res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
+			return;
+		}
+		
+		var elementId=results[0].ElementId;
+		
+		connection.query('insert into Actions (RoomId,UserId,ElementId,Value) values (?,?,?,?);',[roomId,targetUserId,elementId,value],function (error,results,fields) {
+			console.log(results);
+			if(error){
+				res.statusCode=500;
+				res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
+				console.log(error);
+				return;
+			}
+			
+			res.statusCode=200;
+			res.end(JSON.stringify({}));
+		});
+	});
+};
+
 function nearbyroomsFunc(req,res){
 	
 };
@@ -343,6 +387,7 @@ var fLUT = [
 	{'url':'/admin/myrooms','func':adminMyroomsFunc},
 	{'url':'/admin/roomelements','func':adminRoomelementsFunc},
 	{'url':'/admin/updateelementstate','func':adminUpdateelementstateFunc},
+	{'url':'/admin/updateelementstatebyroom','func':adminUpdateelementstatebyroomFunc},
 ];
 
 function handle(req,res){
