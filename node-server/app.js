@@ -249,7 +249,7 @@ function adminRoomelementsFunc(req,res){
 		return (cur-tsd)/1000+(new Date().getTimezoneOffset()*60);
 	};
 	
-	connection.query('select Users.UserId, Elements.Type, Actions.Value, Users.Name, Actions.Timestamp from Actions inner join Actions on Elements.ElementId = Actions.ElementId inner join Users on Actions.UserId = Users.UserId where Elements.RoomId = ? order by Actions.Timestamp desc,Actions.ActionId desc;',[roomId,userId],function (error,results,fields) {
+	connection.query('select Users.UserId, Elements.Type, Actions.Value, Users.Name, Actions.Timestamp from Elements inner join Actions on Elements.ElementId = Actions.ElementId inner join Users on Actions.UserId = Users.UserId where Elements.RoomId = ? order by Actions.Timestamp desc,Actions.ActionId desc;',[roomId,userId],function (error,results,fields) {
 		console.log(results);
 		if(error){
 			res.statusCode=500;
