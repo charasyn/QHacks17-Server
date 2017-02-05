@@ -125,7 +125,7 @@ function roomelementsFunc(req,res){
 			
 			res.statusCode=200;
 			res.end(JSON.stringify({elements:elements}));
-		}
+		});
 	});
 };
 
@@ -167,7 +167,7 @@ function updateelementstateFunc(req,res){
 			
 			res.statusCode=200;
 			res.end(JSON.stringify({}));
-		}
+		});
 	});
 };
 
