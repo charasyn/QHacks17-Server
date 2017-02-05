@@ -1,0 +1,143 @@
+Flagg design doc
+// 2017-02-03 22:22
+-----
+ideas
+-three permission levels
+	-Room Owner
+		-controls room, buttons w.r.t. creating, destroying
+	-Room Admin
+		-able to view queue, dequeue, etc.
+	-Room Member
+		-able to enqueue themselves
+-net arch
+	-backend
+		-running in "the cloud"
+	-frontend
+		-whatever
+-room "official terms"
+	-join with QR code
+	-location services
+	-
+-element
+	-action: user's interaction with element
+	-string
+	-button
+	-menu item with description and image
+-user flow
+	-makes an account
+		-google? facebook?
+	-joins a room
+	-inside the room
+		-user interacts with an element
+		-user app sends API request
+		-server receives request
+		-admin app requests list (periodically, ex. 2 seconds)
+		-server sends list
+		-admin app receives and shows list
+
+DON'T WORRY ABOUT PERMISSIONS LATER
+-----
+data structures
+-list of users
+	-name
+	-list of room IDs
+	-permanent auth details
+	-last auth token
+-list of rooms
+	-list of members
+		-permissions
+	-list of requests
+
+tables
+	Users
+		UserId
+		Name
+		// other user-specific stuff
+	Rooms
+		RoomId
+		Name
+		Description
+		Owner
+		// other attributes
+		//Location
+		//Radius
+	Admins
+		RoomId
+		UserId
+	Elements
+		ElementId
+		RoomId
+		Name
+		Description
+		Type
+	Actions
+		ActionId
+		RoomId
+		UserId
+		ElementId
+		Timestamp
+		Value
+	Sessions
+		SessionId
+		RoomId
+		UserId
+		InTimestamp
+		OutTimestamp
+-----
+API structure
+/login
+	input:
+		username
+		pass hash
+	output:
+		login token
+		
+/myrooms
+	input:
+		none
+	output:
+				select 
+					Sessions.InTimestamp,
+					Sessions.OutTimestamp,
+					Rooms.Name,
+					Rooms.Description
+				from QHacks.Sessions
+				inner join QHacks.Rooms on Sessions.RoomId=Rooms.RoomId
+				where Sessions.UserId=?;
+		
+		{"rooms":[{"roomId":1,"name":"Test Room","description":""}]}
+/joinroombyid
+	input:
+		room id
+	output:
+		success
+/roomelements
+	input:
+		room id
+	output:
+		elements with user state
+			example:
+				[ { 'ElementId':'1',
+				    'Name':'Button 1',
+					'Description':'A test button.',
+					'Type':'2',
+					'Value':'true' } ]
+/updateelementstate
+	input:
+		room ids
+		element id
+	output:
+		success
+
+for later:
+/nearbyrooms
+	input:
+		location (phone gps)
+	output:
+		list of rooms nearby
+		see /myrooms
+-----
+virtual reality
+	-prof demostrates something in front of camera
+		-multiple people with same request
+		-hit two birds with one stone (multiple requests, one response)
