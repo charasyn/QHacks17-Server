@@ -223,7 +223,7 @@ function adminMyroomsFunc(req,res){
 	var userId=urlp.query.userId;
 	var token=urlp.query.token;
 	
-	connection.query('select Rooms.RoomId, Rooms.Name, Rooms.Description, Sessions.InTimestamp, Sessions.OutTimestamp from QHacks.Sessions inner join QHacks.Rooms on Sessions.RoomId=Rooms.RoomId inner join QHacks.Admins on Sessions.RoomId=Admins.RoomId where Sessions.UserId=? and Admins.UserId=?;',[userId,userId],function (error,results,fields) {
+	connection.query('select Rooms.RoomId, Rooms.Name, Rooms.Description from Admins inner join QHacks.Rooms on Admins.RoomId=Rooms.RoomId where Admins.UserId=?;',[userId],function (error,results,fields) {
 		console.log(results);
 		if(error){
 			res.statusCode=500;
