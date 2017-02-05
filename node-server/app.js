@@ -48,10 +48,9 @@ function loginFunc(req,res){
 			res.end(JSON.stringify({userId:userId,token:token}));
 		});
 	});
-}
+};
 
 function myroomsFunc(req,res){
-	// DO NOT DO THIS IN PRODUCTION!!!!!
 	var urlp = url.parse(req.url,true);
 	var userId=urlp.query.userId;
 	var token=urlp.query.token;
@@ -69,9 +68,11 @@ function myroomsFunc(req,res){
 		res.statusCode=200;
 		res.end(JSON.stringify({rooms:processed}));
 	});
-}
+};
 
 function joinroombyidFunc(req,res){
+	// this isn't implemented
+	/*
 	var urlp = url.parse(req.url,true);
 	var userId=urlp.query.userId;
 	var token=urlp.query.token;
@@ -89,6 +90,9 @@ function joinroombyidFunc(req,res){
 		res.statusCode=200;
 		res.end(JSON.stringify({rooms:processed}));
 	});
+	*/
+	res.statusCode=500;
+	res.end();
 };
 
 function roomelementsFunc(req,res){
@@ -171,6 +175,149 @@ function updateelementstateFunc(req,res){
 	});
 };
 
+function updateelementstatebyroomFunc(req,res){
+	var urlp = url.parse(req.url,true);
+	var userId=urlp.query.userId;
+	var token=urlp.query.token;
+	var roomId=urlp.query.roomId;
+	var value=urlp.query.value;
+	var type=urlp.query.type;
+	connection.query('select Elements.ElementId from Elements where Elements.RoomId = ? and Elements.Type = ?;',[roomId,type],function (error,results,fields){
+		console.log(results);
+		if(error){
+			res.statusCode=500;
+			res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
+			console.log(error);
+			return;
+		}
+		if(results.length>1){
+			res.statusCode=500;
+			res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
+			return;
+		}
+		if(results.length<1){
+			res.statusCode=404;
+			res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
+			return;
+		}
+		
+		var elementId=results[0].ElementId;
+		
+		connection.query('insert into Actions (RoomId,UserId,ElementId,Value) values (?,?,?,?);',[roomId,userId,elementId,value],function (error,results,fields) {
+			console.log(results);
+			if(error){
+				res.statusCode=500;
+				res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
+				console.log(error);
+				return;
+			}
+			
+			res.statusCode=200;
+			res.end(JSON.stringify({}));
+		});
+	});
+};
+
+function adminMyroomsFunc(req,res){
+	var urlp = url.parse(req.url,true);
+	var userId=urlp.query.userId;
+	var token=urlp.query.token;
+	
+	connection.query('select Rooms.RoomId, Rooms.Name, Rooms.Description, Sessions.InTimestamp, Sessions.OutTimestamp from QHacks.Sessions inner join QHacks.Rooms on Sessions.RoomId=Rooms.RoomId inner join QHacks.Admins on Sessions.RoomId=Admins.RoomId where Sessions.UserId=? and Admins.UserId=?;',[userId,userId],function (error,results,fields) {
+		console.log(results);
+		if(error){
+			res.statusCode=500;
+			res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
+			console.log(error);
+			return;
+		}
+		var processed=results.map(function (x){return {roomId:x.RoomId,name:x.Name,description:x.Description}});
+		
+		res.statusCode=200;
+		res.end(JSON.stringify({rooms:processed}));
+	});
+};
+
+function adminRoomelementsFunc(req,res){
+	var urlp = url.parse(req.url,true);
+	var userId=urlp.query.userId;
+	var token=urlp.query.token;
+	var roomId=urlp.query.roomId;
+	connection.query('select Elements.ElementId, Elements.Name, Elements.Description, Elements.Type from Elements where Elements.RoomId = ?;',[roomId],function (error,results,fields){
+		console.log(results);
+		if(error){
+			res.statusCode=500;
+			res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
+			console.log(error);
+			return;
+		}
+		
+		var elements = results.map(function(x){return {elementId:x.ElementId,name:x.Name,description:x.Description,type:x.Type,value:null}});
+		
+		connection.query('select Elements.ElementId, Actions.Value from Elements inner join Actions on Elements.ElementId = Actions.ElementId where Elements.RoomId = ? and Actions.UserId = ? order by Actions.Timestamp desc,Actions.ActionId desc limit 1;',[roomId,userId],function (error,results,fields) {
+			console.log(results);
+			if(error){
+				res.statusCode=500;
+				res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
+				console.log(error);
+				return;
+			}
+			
+			// TODO: do this better
+			for(var i=0;i<results.length;i++){
+				for(var j=0;j<elements.length;j++){
+					if(elements[j].elementId===results[i].elementId) { elements[j].value=results[i].value; }
+				}
+			}
+			
+			res.statusCode=200;
+			res.end(JSON.stringify({elements:elements}));
+		});
+	});
+};
+
+function adminUpdateelementstateFunc(req,res){
+	var urlp = url.parse(req.url,true);
+	var userId=urlp.query.userId;
+	var token=urlp.query.token;
+	var elementId=urlp.query.elementId;
+	var value=urlp.query.value;
+	connection.query('select Elements.RoomId from Elements where Elements.ElementId = ?;',[elementId],function (error,results,fields){
+		console.log(results);
+		if(error){
+			res.statusCode=500;
+			res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
+			console.log(error);
+			return;
+		}
+		if(results.length>1){
+			res.statusCode=500;
+			res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
+			return;
+		}
+		if(results.length<1){
+			res.statusCode=404;
+			res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
+			return;
+		}
+		
+		var roomId=results[0].RoomId;
+		
+		connection.query('insert into Actions (RoomId,UserId,ElementId,Value) values (?,?,?,?);',[roomId,userId,elementId,value],function (error,results,fields) {
+			console.log(results);
+			if(error){
+				res.statusCode=500;
+				res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
+				console.log(error);
+				return;
+			}
+			
+			res.statusCode=200;
+			res.end(JSON.stringify({}));
+		});
+	});
+};
+
 function nearbyroomsFunc(req,res){
 	
 };
@@ -181,7 +328,11 @@ var fLUT = [
 	{'url':'/joinroombyid','func':joinroombyidFunc},
 	{'url':'/roomelements','func':roomelementsFunc},
 	{'url':'/updateelementstate','func':updateelementstateFunc},
+	{'url':'/updateelementstatebyroom','func':updateelementstateFunc},
 	//{'url':'/nearbyrooms','func':nearbyroomsFunc},
+	{'url':'/admin/myrooms','func':adminMyroomsFunc},
+	{'url':'/admin/roomelements','func':adminRoomelementsFunc},
+	{'url':'/admin/updateelementstate','func':adminUpdateelementstateFunc},
 ];
 
 function handle(req,res){

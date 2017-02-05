@@ -128,6 +128,10 @@ API structure
 		element id
 	output:
 		success
+/admin/myrooms
+/admin/roomelements
+/admin/updateelementstate
+
 
 for later:
 /nearbyrooms
