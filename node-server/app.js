@@ -243,7 +243,13 @@ function adminRoomelementsFunc(req,res){
 	var userId=urlp.query.userId;
 	var token=urlp.query.token;
 	var roomId=urlp.query.roomId;
-	connection.query('select Elements.ElementId, Elements.Name, Elements.Description, Elements.Type from Elements where Elements.RoomId = ?;',[roomId],function (error,results,fields){
+	
+	function CalcTime(ts){
+		var tsd = Date.parse(ts), cur = Date.now();
+		return (cur-tsd)/1000+(new Date().getTimezoneOffset()*60);
+	};
+	
+	connection.query('select Users.UserId, Elements.Type, Actions.Value, Users.Name, Actions.Timestamp from Actions inner join Actions on Elements.ElementId = Actions.ElementId inner join Users on Actions.UserId = Users.UserId where Elements.RoomId = ? order by Actions.Timestamp desc,Actions.ActionId desc;',[roomId,userId],function (error,results,fields) {
 		console.log(results);
 		if(error){
 			res.statusCode=500;
@@ -252,27 +258,18 @@ function adminRoomelementsFunc(req,res){
 			return;
 		}
 		
-		var elements = results.map(function(x){return {elementId:x.ElementId,name:x.Name,description:x.Description,type:x.Type,value:null}});
+		var out = [];
 		
-		connection.query('select Elements.ElementId, Actions.Value from Elements inner join Actions on Elements.ElementId = Actions.ElementId where Elements.RoomId = ? and Actions.UserId = ? order by Actions.Timestamp desc,Actions.ActionId desc limit 1;',[roomId,userId],function (error,results,fields) {
-			console.log(results);
-			if(error){
-				res.statusCode=500;
-				res.end(JSON.stringify({error:"We messed up, bigtime. Sorry."}));
-				console.log(error);
-				return;
-			}
-			
-			// TODO: do this better
-			for(var i=0;i<results.length;i++){
-				for(var j=0;j<elements.length;j++){
-					if(elements[j].elementId===results[i].elementId) { elements[j].value=results[i].value; }
-				}
-			}
-			
-			res.statusCode=200;
-			res.end(JSON.stringify({elements:elements}));
-		});
+		for(var i=0;i<results.length;i++){
+			var r=results[i];
+			if(!(out[r.UserId]))
+				out[r.UserId]={name:r.Name,type:r.Type,message:r.Value,location:"Table "+r.UserId,timeSince:CalcTime(r.Timestamp)};
+		}
+		
+		out=out.sort(function(a,b){return -(a.timeSince-b.timeSince);});
+		
+		res.statusCode=200;
+		res.end(JSON.stringify({elements:out}));
 	});
 };
 
