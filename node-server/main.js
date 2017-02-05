@@ -4,6 +4,7 @@ var port = 42000;
 
 var requestHandler = function(request, response){  
 	console.log(request.url);
+	response.setHeader('Access-Control-Allow-Origin','*');
 	app.handle(request,response);
 };
 
