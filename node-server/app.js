@@ -265,8 +265,21 @@ function adminRoomelementsFunc(req,res){
 			if(!(out[r.UserId]))
 				out[r.UserId]={name:r.Name,type:r.Type,message:r.Value,location:"Table "+r.UserId,timeSince:CalcTime(r.Timestamp)};
 		}
+		console.log(out);
 		
-		out=out.sort(function(a,b){return -(a.timeSince-b.timeSince);});
+		var out2 = [];
+		
+		var j=0;
+		for(var i=0;i<results.length;i++){
+			var r=results[i];
+			if(out[r.UserId]!=null){
+				out2[j++]=out[r.UserId];
+				out[r.UserId]=null;
+			}
+		}
+		console.log(out2);
+		
+		//out=out.sort(function(a,b){return -(a.timeSince-b.timeSince);});
 		
 		res.statusCode=200;
 		res.end(JSON.stringify({elements:out}));
