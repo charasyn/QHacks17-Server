@@ -282,7 +282,7 @@ function adminRoomelementsFunc(req,res){
 		//out=out.sort(function(a,b){return -(a.timeSince-b.timeSince);});
 		
 		res.statusCode=200;
-		res.end(JSON.stringify({elements:out}));
+		res.end(JSON.stringify({elements:out2}));
 	});
 };
 
